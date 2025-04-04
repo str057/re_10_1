@@ -1,21 +1,40 @@
-def mask_account_card(info):
-    # Разделяем строку на тип и номер
-    parts = info.split()
-    card_type = ' '.join(parts[:-1])
-    number = parts[-1]
+from typing import Union
+from datetime import datetime
 
-    if 'Счет' in card_type:
-        # Маскировка для счета
-        masked_number = '**' + number[-4:]
-        return f"{card_type} {masked_number}"
+def get_mask_card_number(card_number: Union[str]) -> Union[str]:
+    """Функция принимает на вход номер карты в виде строки и
+    возвращает маску номера по правилу XXXX XX** **** XXXX"""
+    if card_number.isdigit() and len(card_number) == 16:
+        masked_number = card_number[0:4] + " " + card_number[4:6] + "** **** " + card_number[-4:]
+        return masked_number
     else:
-        # Маскировка для карт
-        masked_number = number[:4] + ' ' + number[4:6] + '** **** ' + number[-4:]
-        return f"{card_type} {masked_number}"
+        return "Проверьте правильность введенного номера карты!"
 
-def get_date(date_str):
-    from datetime import datetime
-    # Преобразуем строку в объект datetime
-    dt = datetime.fromisoformat(date_str)
-    # Возвращаем в нужном формате
-    return dt.strftime("%d.%m.%Y")
+def get_mask_account(account_number: Union[str]) -> Union[str]:
+    """Функция принимает на вход номер счета в виде строки и
+    возвращает маску номера по правилу XXXX XXXX XXXX XXXX XX"""
+    if account_number.isdigit() and len(account_number) == 20:
+        masked_number = account_number[0:4] + " " + account_number[4:8] + " " + account_number[8:12] + " " + account_number[12:16] + " " + account_number[-2:]
+        return masked_number
+    else:
+        return "Проверьте правильность введенного номера счета!"
+
+def mask_account_card(input_string: str) -> str:
+    """Функция принимает строку с типом карты или счета и номером,
+    возвращает замаскированный номер."""
+    parts = input_string.split()
+    card_type = " ".join(parts[:-1])  # Все кроме последнего элемента
+    number = parts[-1]  # Последний элемент - номер
+
+    if card_type in ["Visa", "MasterCard", "Maestro"]:
+        return f"{card_type} {get_mask_card_number(number)}"
+    elif card_type == "Счет":
+        return f"{card_type} {get_mask_account(number)}"
+    else:
+        return "Неизвестный тип карты или счета!"
+
+def get_date(date_string: str) -> str:
+    """Функция принимает строку с датой в формате ISO и возвращает
+    строку с датой в формате ДД.ММ.ГГГГ."""
+    date_obj = datetime.fromisoformat(date_string)
+    return date_obj.strftime("%d.%m.%Y")
